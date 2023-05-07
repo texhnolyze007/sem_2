@@ -13,7 +13,7 @@ Rational::Rational(int num, int den) : num_(num), den_(den) {
 
 
 bool Rational::operator<(const Rational& rat) const noexcept {
-	return num() * rat.denom() < denom() * rat.num();
+	return num() * rat.denom() < denom() * rat.num();	
 }
 
 bool Rational::operator==(const Rational& rat) const noexcept {
@@ -80,17 +80,17 @@ Rational& Rational::operator/=(const Rational& rat) {
 
 
 
-std::ostream& Rational::OutPut(std::ostream& ostrm) const noexcept {
-	ostrm << num() << ' ' << del() << ' ' << denom();
+std::ostream& Rational::write_to(std::ostream& ostrm) const noexcept {
+	ostrm << num() << del() << denom();
 	return ostrm;
 }
 
-std::istream& Rational::InPut(std::istream& istrm) noexcept {
+std::istream& Rational::read_from(std::istream& istrm) noexcept {
 	int numerator, denominator;
 	char delimiter;
-	istrm >> numerator >> delimiter >> denominator;
+	istrm >> numerator >> std::noskipws >> delimiter >> denominator >> std::skipws;
 
-	if (istrm.good()) {
+	if (istrm.good() || istrm.eof()) {
 		if (delimiter == delimiter_ && denominator > 0) {
 			num_ = numerator;
 			den_ = denominator;
@@ -116,25 +116,35 @@ int32_t gcd(int32_t a, int32_t b) {
 }
 
 void Rational::normalize() noexcept {
+	int flag = 0;
 	if (num() < 0) {
-		num_ = -num_;
-		den_ = -den_;
+		flag = 1 - flag;
+	}
+	if (denom() < 0) {
+		flag = 1 - flag;
 	}
 
 	int32_t g = gcd(num(), denom());
 
 	num_ /= g;
 	den_ /= g;
+
+	num_ = abs(num_);
+	den_ = abs(den_);
+
+	if (flag == 1 && num()) {
+		num_ = -num_;
+	}
 }
 
 
 
 std::istream& operator>>(std::istream& istrm, Rational& rhs) noexcept {
-	rhs.InPut(istrm);
+	rhs.read_from(istrm);
 	return istrm;
 };
 
 std::ostream& operator<<(std::ostream& ostrm, const Rational& rhs) noexcept {
-	rhs.OutPut(ostrm);
+	rhs.write_to(ostrm);
 	return ostrm;
 };
